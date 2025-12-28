@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#667eea" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Check-ins" />
+  <link rel="icon" type="image/png" href="check-ins.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="check-ins.png" />
   <title>Check-ins</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,10 +34,7 @@
       padding-bottom: 92px;
     }
 
-    .app {
-      max-width: 430px;
-      margin: 0 auto;
-    }
+    .app { max-width: 430px; margin: 0 auto; }
 
     .header {
       color: rgb(255, 255, 255);
@@ -46,11 +48,7 @@
       text-shadow: rgba(0, 0, 0, 0.25) 2px 2px 4px;
     }
 
-    .header p {
-      margin-top: 6px;
-      font-size: 0.95rem;
-      opacity: 0.9;
-    }
+    .header p { margin-top: 6px; font-size: 0.95rem; opacity: 0.9; }
 
     .card {
       background: var(--card);
@@ -97,12 +95,7 @@
 
     input[type="text"]:focus, textarea:focus, select:focus { border-color: rgba(102, 126, 234, 0.8); }
 
-    .hint {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.35;
-    }
+    .hint { margin-top: 8px; color: var(--muted); font-size: 0.85rem; line-height: 1.35; }
 
     .btn {
       border: none;
@@ -217,16 +210,12 @@
     .section { display: none; }
     .section.active { display: block; }
 
-    .table-wrap {
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-    }
+    .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 14px; }
 
     table {
       border-collapse: collapse;
       width: 100%;
-      min-width: 640px;
+      min-width: 680px;
       background: rgb(255, 255, 255);
     }
 
@@ -242,17 +231,10 @@
       white-space: nowrap;
     }
 
-    tbody td {
-      border-bottom: 1px solid var(--border);
-      padding: 10px;
-      font-size: 0.92rem;
-      vertical-align: top;
-    }
-
+    tbody td { border-bottom: 1px solid var(--border); padding: 10px; font-size: 0.92rem; vertical-align: top; }
     tbody tr:last-child td { border-bottom: none; }
 
     .muted { color: var(--muted); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
     .type-list { display: grid; gap: 10px; }
 
@@ -281,7 +263,6 @@
     }
 
     .toast.show { display: block; }
-
     .toast .title { font-weight: 650; }
     .toast .body { margin-top: 4px; font-size: 0.92rem; color: var(--muted); }
 
@@ -308,11 +289,7 @@
 
     .modal.show { display: block; }
 
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.35);
-    }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.35); }
 
     .modal-sheet {
       position: absolute;
@@ -328,22 +305,11 @@
       border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
-    .modal-head {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
+    .modal-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
     .modal-title { font-weight: 700; font-size: 1.05rem; }
     .modal-sub { margin-top: 4px; color: var(--muted); font-size: 0.9rem; }
 
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-top: 12px;
-    }
+    .modal-actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
 
     @media (min-width: 768px) {
       body { padding: 22px; padding-bottom: 106px; }
@@ -359,7 +325,7 @@
   <div class="app" role="application">
     <div class="header">
       <h1>Check-ins</h1>
-      <p>One tap. Stores time + location + type + optional notes.</p>
+      <p>One tap. Stores time + coordinates + street address + type + optional notes.</p>
     </div>
 
     <section id="sec-checkin" class="section active" aria-labelledby="tab-checkin">
@@ -376,11 +342,11 @@
       <div class="card">
         <div class="row wrap">
           <div class="pill" id="countsPill">0 check-ins</div>
-          <div class="pill" id="geoPill">Location: unknown</div>
+          <div class="pill" id="geoPill">Address: unknown</div>
           <div class="spacer"></div>
           <button id="btnRefreshGeo" class="btn small primary" type="button">Refresh location</button>
         </div>
-        <div class="hint">Uses browser geolocation. First check-in will trigger a permission prompt.</div>
+        <div class="hint">Uses browser geolocation + reverse geocoding (OpenStreetMap Nominatim).</div>
       </div>
     </section>
 
@@ -399,8 +365,8 @@
             <thead>
               <tr>
                 <th data-sort="createdAt">Date</th>
-                <th data-sort="location">Location</th>
                 <th data-sort="type">Type</th>
+                <th data-sort="address">Address</th>
                 <th data-sort="notes">Notes</th>
               </tr>
             </thead>
@@ -408,7 +374,7 @@
           </table>
         </div>
 
-        <div class="hint">Tap column headers to sort. Tap Type or Notes to edit. On phone, scroll sideways for the full table.</div>
+        <div class="hint">Tap column headers to sort. Tap Type or Notes to edit. Address is looked up and stored.</div>
       </div>
     </section>
 
@@ -425,7 +391,7 @@
           <div class="spacer"></div>
           <button id="btnReset" class="btn danger" type="button">Reset all data</button>
         </div>
-        <div class="hint">Archiving hides a type from Check-in buttons. Inactive types can be activated or deleted permanently. Old check-ins keep a snapshot of the name.</div>
+        <div class="hint">Archiving hides a type from Check-in buttons. Inactive types can be activated or deleted permanently.</div>
       </div>
 
       <div class="card">
@@ -516,10 +482,26 @@
       return f.format(dt);
     };
 
+    const fmtDate = (ms) => {
+      const dt = new Date(ms);
+      const f = new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      return f.format(dt);
+    };
+
     const clampText = (s, max = 2000) => {
       if (s == null) return "";
       const t = String(s);
       return t.length > max ? t.slice(0, max) : t;
+    };
+
+    const stripLeadingBOM = (s) => {
+      const t = String(s ?? "");
+      if (!t) return t;
+      return t.charCodeAt(0) === 0xFEFF ? t.slice(1) : t;
     };
 
     const geoErrorName = (code) => {
@@ -540,7 +522,7 @@
           { id: uuid(), name: "Deep Work", createdAt, active: true },
         ],
         checkIns: [],
-        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null },
+        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null },
       };
     };
 
@@ -557,8 +539,23 @@
           if (typeof out.active !== "boolean") out.active = true;
           return out;
         });
+
         parsed.checkIns = Array.isArray(parsed.checkIns) ? parsed.checkIns : [];
-        parsed.ui = parsed.ui && typeof parsed.ui === "object" ? parsed.ui : { sortKey: "createdAt", sortDir: "desc", lastGeo: null };
+        parsed.checkIns = parsed.checkIns.map((c) => {
+          const out = c && typeof c === "object" ? c : {};
+          if (!out.id) out.id = "c_" + uuid();
+          if (typeof out.createdAt !== "number") out.createdAt = nowMs();
+          if (!out.location || typeof out.location !== "object") out.location = null;
+          if (!out.address || typeof out.address !== "object") out.address = null;
+          return out;
+        });
+
+        parsed.ui = parsed.ui && typeof parsed.ui === "object"
+          ? parsed.ui
+          : { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null };
+
+        if (!("lastAddress" in parsed.ui)) parsed.ui.lastAddress = null;
+
         return parsed;
       } catch {
         return defaultState();
@@ -588,15 +585,6 @@
       el.textContent = text;
     };
 
-    const escapeHtml = (s) => {
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    };
-
     const getTypeName = (typeId, snapshot) => {
       const t = state.types.find((x) => x.id === typeId);
       return t ? t.name : (snapshot || "(deleted type)");
@@ -612,6 +600,17 @@
         return `${lat.toFixed(5)}, ${lng.toFixed(5)}${accTxt}`;
       }
       if (loc.status === "error") return `⚠ ${loc.name || "location error"}`;
+      return "unknown";
+    };
+
+    const addressToText = (addr, loc) => {
+      if (!addr) {
+        if (loc && loc.status === "ok") return "(resolving address...)";
+        return "unknown";
+      }
+      if (addr.status === "ok") return addr.text || "(address)";
+      if (addr.status === "pending") return "(resolving address...)";
+      if (addr.status === "error") return addr.text || "(address unavailable)";
       return "unknown";
     };
 
@@ -640,10 +639,116 @@
       });
     };
 
+    // Reverse geocoding (street address)
+
+    const geocodeCache = new Map();
+    let lastGeocodeAt = 0;
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    const rateLimitGeocode = async () => {
+      const now = nowMs();
+      const wait = Math.max(0, 1100 - (now - lastGeocodeAt));
+      if (wait) await sleep(wait);
+      lastGeocodeAt = nowMs();
+    };
+
+    const formatNominatimAddress = (j) => {
+      const a = (j && j.address && typeof j.address === "object") ? j.address : {};
+      const road = a.road || a.pedestrian || a.footway || a.cycleway || a.path || "";
+      const num = a.house_number || "";
+      const city = a.city || a.town || a.village || a.hamlet || a.municipality || a.county || "";
+      const postcode = a.postcode || "";
+      const country = a.country || "";
+
+      const line1 = (road && num) ? `${road} ${num}` : (road || j.name || "");
+      const line2 = [city, postcode].filter(Boolean).join(" ");
+      const out = [line1, line2, country].filter(Boolean).join(", ");
+      return clampText(out || j.display_name || "", 200);
+    };
+
+    const reverseGeocodeNominatim = async (lat, lng) => {
+      await rateLimitGeocode();
+
+      const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+      const cached = geocodeCache.get(key);
+      if (cached) return { status: "ok", text: cached, provider: "cache" };
+
+      const url = new URL("https://nominatim.openstreetmap.org/reverse");
+      url.searchParams.set("format", "jsonv2");
+      url.searchParams.set("lat", String(lat));
+      url.searchParams.set("lon", String(lng));
+      url.searchParams.set("zoom", "18");
+      url.searchParams.set("addressdetails", "1");
+
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 9000);
+
+      try {
+        const res = await fetch(url.toString(), {
+          method: "GET",
+          signal: ctrl.signal,
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": navigator.language || "en",
+          },
+        });
+        if (!res.ok) {
+          return { status: "error", text: `geocode http ${res.status}`, provider: "nominatim" };
+        }
+        const j = await res.json();
+        const text = formatNominatimAddress(j);
+        if (!text) return { status: "error", text: "geocode: empty address", provider: "nominatim" };
+
+        geocodeCache.set(key, text);
+        return {
+          status: "ok",
+          text,
+          provider: "nominatim",
+          displayName: clampText(j.display_name || "", 400),
+          parts: j.address || null,
+        };
+      } catch (e) {
+        const msg = (e && e.name === "AbortError") ? "geocode timeout" : "geocode failed";
+        return { status: "error", text: msg, provider: "nominatim" };
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    const resolveAddressForCheckIn = async (checkInId) => {
+      const it = state.checkIns.find((x) => x.id === checkInId);
+      if (!it) return;
+      if (!it.location || it.location.status !== "ok") return;
+      if (it.address && it.address.status === "ok") return;
+
+      const lat = Number(it.location.lat);
+      const lng = Number(it.location.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      const addr = await reverseGeocodeNominatim(lat, lng);
+
+      const current = state.checkIns.find((x) => x.id === checkInId);
+      if (!current) return;
+
+      if (addr.status === "ok") {
+        current.address = addr;
+        state.ui.lastAddress = addr;
+      } else {
+        current.address = { status: "error", text: addr.text || "address unavailable", provider: addr.provider || "nominatim" };
+      }
+
+      saveState();
+      renderCounts();
+      renderHistory();
+    };
+
     const renderCounts = () => {
       const n = state.checkIns.length;
       $("#countsPill").textContent = `${n} check-in${n === 1 ? "" : "s"}`;
-      $("#geoPill").textContent = `Location: ${locationToText(state.ui.lastGeo)}`;
+
+      const addrText = addressToText(state.ui.lastAddress, state.ui.lastGeo);
+      $("#geoPill").textContent = `Address: ${addrText}`;
     };
 
     const renderTypeButtons = () => {
@@ -794,10 +899,10 @@
         const bn = getTypeName(b.typeId, b.typeNameSnapshot);
         return an.localeCompare(bn, undefined, { sensitivity: "base" });
       }
-      if (key === "location") {
-        const al = locationToText(a.location);
-        const bl = locationToText(b.location);
-        return al.localeCompare(bl, undefined, { sensitivity: "base" });
+      if (key === "address") {
+        const an = addressToText(a.address, a.location);
+        const bn = addressToText(b.address, b.location);
+        return an.localeCompare(bn, undefined, { sensitivity: "base" });
       }
       return 0;
     };
@@ -831,11 +936,7 @@
         const tr = document.createElement("tr");
 
         const tdDate = document.createElement("td");
-        tdDate.textContent = fmtDateTime(it.createdAt);
-
-        const tdLoc = document.createElement("td");
-        const locText = locationToText(it.location);
-        tdLoc.innerHTML = `<span class=\"mono\">${escapeHtml(locText)}</span>`;
+        tdDate.textContent = fmtDate(it.createdAt);
 
         const tdType = document.createElement("td");
         const typeBtn = document.createElement("button");
@@ -845,6 +946,9 @@
         typeBtn.title = "Edit";
         typeBtn.addEventListener("click", () => openEditModal(it.id));
         tdType.appendChild(typeBtn);
+
+        const tdAddr = document.createElement("td");
+        tdAddr.textContent = addressToText(it.address, it.location);
 
         const tdNotes = document.createElement("td");
         const notesBtn = document.createElement("button");
@@ -857,8 +961,8 @@
         tdNotes.appendChild(notesBtn);
 
         tr.appendChild(tdDate);
-        tr.appendChild(tdLoc);
         tr.appendChild(tdType);
+        tr.appendChild(tdAddr);
         tr.appendChild(tdNotes);
 
         body.appendChild(tr);
@@ -968,13 +1072,21 @@
 
     // CSV
 
-    // RFC-4180-ish: quote if contains comma, quote, CR or LF.
-    // Keep newlines as-is inside quoted values.
+    const csvNeedsQuotes = (s) => {
+      const t = String(s ?? "");
+      for (let i = 0; i < t.length; i += 1) {
+        const c = t[i];
+        if (c === ',' || c === '"' || c === '\n' || c === '\r') return true;
+      }
+      return false;
+    };
+
+    const csvEscapeQuotes = (s) => String(s ?? "").split('"').join('""');
+
     const csvCell = (v) => {
       const s = String(v ?? "");
-      const needsQuotes = /[\",\r\n]/.test(s);
-      const escaped = s.replaceAll('"', '""');
-      return needsQuotes ? `"${escaped}"` : escaped;
+      const escaped = csvEscapeQuotes(s);
+      return csvNeedsQuotes(s) ? `"${escaped}"` : escaped;
     };
 
     const exportCsv = () => {
@@ -989,17 +1101,21 @@
         "created_at_local",
         "created_at_iso",
         "type",
+        "address",
         "notes",
         "location_status",
         "latitude",
         "longitude",
         "accuracy_m",
         "geo_error",
+        "address_status",
+        "address_provider",
       ];
 
       const rows = [header];
       for (const it of items) {
         const loc = it.location || {};
+        const addr = it.address || {};
         const type = getTypeName(it.typeId, it.typeNameSnapshot);
         const iso = new Date(it.createdAt).toISOString();
         const local = fmtDateTime(it.createdAt);
@@ -1007,16 +1123,18 @@
           local,
           iso,
           type,
+          addr.status === "ok" ? (addr.text || "") : "",
           it.notes || "",
           loc.status || "unknown",
           loc.status === "ok" ? String(loc.lat) : "",
           loc.status === "ok" ? String(loc.lng) : "",
           loc.status === "ok" && loc.accuracy != null ? String(loc.accuracy) : "",
           loc.status === "error" ? (loc.name || loc.message || "") : "",
+          addr.status || "",
+          addr.provider || "",
         ]);
       }
 
-      // Use CRLF between records for better Excel compatibility.
       const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -1070,7 +1188,6 @@
 
       const pushCell = () => { row.push(cell); cell = ""; };
       const pushRow = () => {
-        // Avoid pushing a trailing empty row
         const allEmpty = row.length === 1 && row[0] === "";
         if (!allEmpty) rows.push(row);
         row = [];
@@ -1095,15 +1212,15 @@
         if (ch === '"') { inQuotes = true; i += 1; continue; }
         if (ch === ',') { pushCell(); i += 1; continue; }
 
-        if (ch === '\n') {
+        if (ch === "\n") {
           pushCell();
           pushRow();
           i += 1;
           continue;
         }
 
-        if (ch === '\r') {
-          if (text[i + 1] === '\n') {
+        if (ch === "\r") {
+          if (text[i + 1] === "\n") {
             pushCell();
             pushRow();
             i += 2;
@@ -1137,7 +1254,7 @@
     };
 
     const importCsvText = (text) => {
-      const raw = String(text || "").replace(/^\uFEFF/, "");
+      const raw = stripLeadingBOM(text);
       const rows = parseCsv(raw);
       if (rows.length < 2) {
         toast("Import failed", "No data rows found");
@@ -1150,12 +1267,15 @@
       const iIso = idx("created_at_iso");
       const iLocal = idx("created_at_local");
       const iType = idx("type");
+      const iAddr = idx("address");
       const iNotes = idx("notes");
       const iLocStatus = idx("location_status");
       const iLat = idx("latitude");
       const iLng = idx("longitude");
       const iAcc = idx("accuracy_m");
       const iErr = idx("geo_error");
+      const iAddrStatus = idx("address_status");
+      const iAddrProvider = idx("address_provider");
 
       if (iType < 0 || (iIso < 0 && iLocal < 0)) {
         toast("Import failed", "Missing required columns (type + created_at_iso/created_at_local)");
@@ -1221,12 +1341,26 @@
           location = { status: "error", name: err || "location error", message: "" };
         }
 
+        let address = null;
+        const addrText = clampText(get(iAddr), 200).trim();
+        const addrStatus = clampText(get(iAddrStatus), 30).trim().toLowerCase();
+        const addrProvider = clampText(get(iAddrProvider), 60).trim();
+
+        if (addrText) {
+          address = { status: "ok", text: addrText, provider: addrProvider || "import" };
+        } else if (addrStatus === "pending") {
+          address = { status: "pending", text: "", provider: addrProvider || "import" };
+        } else if (addrStatus === "error") {
+          address = { status: "error", text: "address unavailable", provider: addrProvider || "import" };
+        }
+
         const candidate = {
           createdAt: ms,
           typeId: t.id,
           typeNameSnapshot: t.name,
           notes,
           location,
+          address,
         };
 
         const key = checkInKey(candidate);
@@ -1335,6 +1469,7 @@
       const startedAt = nowMs();
       const loc = await getGeo();
       state.ui.lastGeo = loc;
+      state.ui.lastAddress = null;
 
       const checkIn = {
         id: "c_" + uuid(),
@@ -1343,21 +1478,32 @@
         typeNameSnapshot: t.name,
         notes: note,
         location: loc,
+        address: null,
       };
+
+      if (loc && loc.status === "ok") {
+        checkIn.address = { status: "pending", text: "", provider: "nominatim" };
+      } else {
+        checkIn.address = { status: "error", text: "address unavailable", provider: "nominatim" };
+      }
 
       state.checkIns.unshift(checkIn);
       saveState();
 
       $("#noteInput").value = "";
 
-      const locText = locationToText(loc);
       if (loc.status === "ok") {
-        setStatus("ok", `Checked in: ${t.name} at ${locText}`);
+        setStatus("ok", `Checked in: ${t.name} (resolving address...)`);
         toast("Checked in", t.name);
-      } else {
-        setStatus("warn", `Checked in: ${t.name} (location: ${locText})`);
-        toast("Checked in (no GPS)", t.name);
+        renderCounts();
+        renderHistory();
+        disableTypeButtons(false);
+        resolveAddressForCheckIn(checkIn.id);
+        return;
       }
+
+      setStatus("warn", `Checked in: ${t.name} (location: ${locationToText(loc)})`);
+      toast("Checked in (no GPS)", t.name);
 
       disableTypeButtons(false);
       renderCounts();
@@ -1367,11 +1513,31 @@
     const refreshGeo = async () => {
       $("#btnRefreshGeo").disabled = true;
       setStatus("warn", "Refreshing location...");
+
       const loc = await getGeo();
       state.ui.lastGeo = loc;
+      state.ui.lastAddress = null;
       saveState();
+
+      if (loc.status === "ok") {
+        setStatus("ok", "Location updated (resolving address...)");
+        const addr = await reverseGeocodeNominatim(Number(loc.lat), Number(loc.lng));
+        if (addr.status === "ok") {
+          state.ui.lastAddress = addr;
+          saveState();
+          setStatus("ok", `Address updated: ${addr.text}`);
+        } else {
+          state.ui.lastAddress = { status: "error", text: addr.text || "address unavailable", provider: "nominatim" };
+          saveState();
+          setStatus("warn", `Address unavailable: ${addr.text || ""}`);
+        }
+      } else {
+        setStatus("warn", `Location unavailable: ${locationToText(loc)}`);
+        state.ui.lastAddress = null;
+        saveState();
+      }
+
       renderCounts();
-      setStatus(loc.status === "ok" ? "ok" : "warn", loc.status === "ok" ? `Location updated: ${locationToText(loc)}` : `Location unavailable: ${locationToText(loc)}`);
       $("#btnRefreshGeo").disabled = false;
     };
 
@@ -1405,10 +1571,15 @@
     const runSelfTests = () => {
       const fail = (msg) => { throw new Error(msg); };
 
+      // stripLeadingBOM
+      if (stripLeadingBOM("\uFEFFabc") !== "abc") fail("stripLeadingBOM: removes BOM");
+      if (stripLeadingBOM("abc") !== "abc") fail("stripLeadingBOM: no-op");
+
       // csvCell
       if (csvCell("a,b") !== '"a,b"') fail("csvCell: comma quoting");
       if (csvCell("a\n b") !== '"a\n b"') fail("csvCell: newline quoting");
       if (csvCell("a\r\n b") !== '"a\r\n b"') fail("csvCell: CRLF quoting");
+      if (csvCell("a\r b") !== '"a\r b"') fail("csvCell: CR quoting");
       if (csvCell('a"b') !== '"a""b"') fail("csvCell: quote escaping");
 
       // parseCsv
@@ -1433,6 +1604,13 @@
       {
         const r = parseCsv('a,b\n"x\r\n y",z\n');
         if (r[1][0] !== "x\r\n y" || r[1][1] !== "z") fail("parseCsv: quoted CRLF newline");
+      }
+
+      // address formatting
+      {
+        const j = { name: "", display_name: "X", address: { road: "Main St", house_number: "1", city: "Helsinki", postcode: "00100", country: "Finland" } };
+        const a = formatNominatimAddress(j);
+        if (!a.includes("Main St") || !a.includes("1")) fail("formatNominatimAddress: street + number");
       }
 
       return true;
@@ -1507,15 +1685,6 @@
       console.error(e);
       toast("Internal error", String(e && e.message ? e.message : e));
     }
-
-    // Opportunistic initial geo cache if permission already granted
-    setTimeout(() => {
-      if (state.ui.lastGeo) return;
-      if (!navigator.permissions || !navigator.permissions.query) return;
-      navigator.permissions.query({ name: "geolocation" }).then((p) => {
-        if (p.state === "granted") refreshGeo();
-      }).catch(() => {});
-    }, 600);
   </script>
 </body>
 </html>
