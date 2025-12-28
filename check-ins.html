@@ -1,0 +1,1521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Check-ins</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg1: rgb(102, 126, 234);
+      --bg2: rgb(118, 75, 162);
+      --card: rgb(255, 255, 255);
+      --text: rgb(32, 33, 36);
+      --muted: rgb(102, 102, 102);
+      --border: rgb(232, 234, 237);
+      --danger: rgb(220, 38, 38);
+      --ok: rgb(22, 163, 74);
+      --warn: rgb(234, 179, 8);
+      --shadow: rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 14px;
+      padding-bottom: 92px;
+    }
+
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .header {
+      color: rgb(255, 255, 255);
+      text-align: left;
+      padding: 12px 10px 16px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      line-height: 1.1;
+      text-shadow: rgba(0, 0, 0, 0.25) 2px 2px 4px;
+    }
+
+    .header p {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 16px var(--shadow);
+      margin-bottom: 12px;
+    }
+
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row.wrap { flex-wrap: wrap; }
+    .spacer { flex: 1; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size: 16px;
+      background: rgb(255, 255, 255);
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea { min-height: 44px; resize: vertical; }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size: 16px;
+      background: rgb(255, 255, 255);
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: rgba(102, 126, 234, 0.8); }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.35;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn.primary {
+      background: rgb(255, 255, 255);
+      color: rgb(84, 93, 210);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn.small { padding: 10px 12px; font-size: 0.95rem; border-radius: 12px; }
+
+    .btn.danger {
+      background: rgba(220, 38, 38, 0.1);
+      color: rgb(153, 27, 27);
+      border: 1px solid rgba(220, 38, 38, 0.25);
+    }
+
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .type-btn {
+      background: rgb(255, 255, 255);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 12px;
+      text-align: left;
+      min-height: 58px;
+      cursor: pointer;
+      box-shadow: rgba(0, 0, 0, 0.08) 0 3px 10px;
+      transition: transform 0.06s;
+    }
+
+    .type-btn:active { transform: scale(0.985); }
+
+    .type-name { font-weight: 650; font-size: 1rem; }
+    .type-sub { margin-top: 4px; font-size: 0.82rem; color: var(--muted); }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgb(245, 246, 255);
+      border: 1px solid rgba(102, 126, 234, 0.25);
+      color: rgb(55, 65, 170);
+    }
+
+    .status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      line-height: 1.35;
+      border: 1px solid var(--border);
+      background: rgb(250, 250, 250);
+    }
+
+    .status.ok { border-color: rgba(22, 163, 74, 0.35); background: rgba(22, 163, 74, 0.08); }
+    .status.err { border-color: rgba(220, 38, 38, 0.35); background: rgba(220, 38, 38, 0.08); }
+    .status.warn { border-color: rgba(234, 179, 8, 0.45); background: rgba(234, 179, 8, 0.10); }
+
+    .tabs {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 14px 16px;
+      background: rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .tabs-inner {
+      max-width: 430px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .tab {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15);
+      color: rgb(255, 255, 255);
+      border-radius: 14px;
+      padding: 12px 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.9);
+      color: rgb(102, 126, 234);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 640px;
+      background: rgb(255, 255, 255);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: rgb(248, 249, 250);
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      font-size: 0.9rem;
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      font-size: 0.92rem;
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .muted { color: var(--muted); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .type-list { display: grid; gap: 10px; }
+
+    .type-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgb(255, 255, 255);
+    }
+
+    .type-item h3 { font-size: 1rem; margin-bottom: 8px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 92px;
+      max-width: 430px;
+      width: calc(100% - 28px);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      display: none;
+    }
+
+    .toast.show { display: block; }
+
+    .toast .title { font-weight: 650; }
+    .toast .body { margin-top: 4px; font-size: 0.92rem; color: var(--muted); }
+
+    .cell-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cell-btn:active { opacity: 0.75; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+    }
+
+    .modal.show { display: block; }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-sheet {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      width: calc(100% - 28px);
+      max-width: 430px;
+      background: rgb(255, 255, 255);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-head {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .modal-title { font-weight: 700; font-size: 1.05rem; }
+    .modal-sub { margin-top: 4px; color: var(--muted); font-size: 0.9rem; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 768px) {
+      body { padding: 22px; padding-bottom: 106px; }
+      .app { max-width: 980px; }
+      .tabs-inner { max-width: 980px; }
+      .type-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .header { padding-left: 2px; }
+      .modal-sheet { max-width: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <div class="header">
+      <h1>Check-ins</h1>
+      <p>One tap. Stores time + location + type + optional notes.</p>
+    </div>
+
+    <section id="sec-checkin" class="section active" aria-labelledby="tab-checkin">
+      <div class="card">
+        <label for="noteInput">Notes (optional)</label>
+        <textarea id="noteInput" placeholder="e.g. mood, context, what happened"></textarea>
+        <div class="hint">Leave notes empty for true one-tap check-ins.</div>
+
+        <div id="typeGrid" class="type-grid" aria-label="Check-in types"></div>
+
+        <div id="checkinStatus" class="status" aria-live="polite">Ready.</div>
+      </div>
+
+      <div class="card">
+        <div class="row wrap">
+          <div class="pill" id="countsPill">0 check-ins</div>
+          <div class="pill" id="geoPill">Location: unknown</div>
+          <div class="spacer"></div>
+          <button id="btnRefreshGeo" class="btn small primary" type="button">Refresh location</button>
+        </div>
+        <div class="hint">Uses browser geolocation. First check-in will trigger a permission prompt.</div>
+      </div>
+    </section>
+
+    <section id="sec-history" class="section" aria-labelledby="tab-history">
+      <div class="card">
+        <div class="row wrap" style="margin-bottom: 10px;">
+          <div class="pill" id="historyPill">History</div>
+          <div class="spacer"></div>
+          <button id="btnImportCsv" class="btn small primary" type="button">Import CSV</button>
+          <button id="btnExportCsv" class="btn small primary" type="button">Export CSV</button>
+        </div>
+        <input id="fileImportCsv" type="file" accept=".csv,text/csv" style="display:none" />
+
+        <div class="table-wrap" role="region" aria-label="Past check-ins">
+          <table>
+            <thead>
+              <tr>
+                <th data-sort="createdAt">Date</th>
+                <th data-sort="location">Location</th>
+                <th data-sort="type">Type</th>
+                <th data-sort="notes">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+
+        <div class="hint">Tap column headers to sort. Tap Type or Notes to edit. On phone, scroll sideways for the full table.</div>
+      </div>
+    </section>
+
+    <section id="sec-types" class="section" aria-labelledby="tab-types">
+      <div class="card">
+        <div class="row" style="margin-bottom: 10px;">
+          <div style="width: 100%;">
+            <label for="newTypeName">New check-in type</label>
+            <input id="newTypeName" type="text" placeholder="e.g. Gym, Coffee, Deep Work" />
+          </div>
+        </div>
+        <div class="row wrap">
+          <button id="btnAddType" class="btn primary" type="button">Add type</button>
+          <div class="spacer"></div>
+          <button id="btnReset" class="btn danger" type="button">Reset all data</button>
+        </div>
+        <div class="hint">Archiving hides a type from Check-in buttons. Inactive types can be activated or deleted permanently. Old check-ins keep a snapshot of the name.</div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="pill">Active types</div>
+          <div class="spacer"></div>
+          <div class="muted" id="typesCountActive">0</div>
+        </div>
+        <div id="typeListActive" class="type-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="pill">Inactive types</div>
+          <div class="spacer"></div>
+          <div class="muted" id="typesCountInactive">0</div>
+        </div>
+        <div id="typeListInactive" class="type-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="tabs" role="navigation" aria-label="Tabs">
+    <div class="tabs-inner">
+      <button id="tab-checkin" class="tab active" type="button">Check-in</button>
+      <button id="tab-history" class="tab" type="button">History</button>
+      <button id="tab-types" class="tab" type="button">Types</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="title" id="toastTitle"></div>
+    <div class="body" id="toastBody"></div>
+  </div>
+
+  <div id="editModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <div class="modal-head">
+        <div style="min-width: 0;">
+          <div class="modal-title" id="editTitle">Edit check-in</div>
+          <div class="modal-sub" id="editSub"></div>
+        </div>
+        <div class="spacer"></div>
+        <button id="btnEditClose" class="btn small danger" type="button">Close</button>
+      </div>
+
+      <div>
+        <label for="editTypeSelect">Type</label>
+        <select id="editTypeSelect"></select>
+        <div class="hint" id="editTypeHint"></div>
+
+        <div style="height: 10px;"></div>
+
+        <label for="editNotesInput">Notes</label>
+        <textarea id="editNotesInput" placeholder="Optional notes"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btnEditCancel" class="btn small danger" type="button">Cancel</button>
+        <div class="spacer"></div>
+        <button id="btnEditSave" class="btn small primary" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "checkins_app_v1";
+
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    const uuid = () => "t_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+    const nowMs = () => Date.now();
+
+    const fmtDateTime = (ms) => {
+      const dt = new Date(ms);
+      const f = new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      return f.format(dt);
+    };
+
+    const clampText = (s, max = 2000) => {
+      if (s == null) return "";
+      const t = String(s);
+      return t.length > max ? t.slice(0, max) : t;
+    };
+
+    const geoErrorName = (code) => {
+      if (code === 1) return "permission denied";
+      if (code === 2) return "position unavailable";
+      if (code === 3) return "timeout";
+      return "unknown error";
+    };
+
+    const defaultState = () => {
+      const createdAt = nowMs();
+      return {
+        version: 1,
+        types: [
+          { id: uuid(), name: "Arrived", createdAt, active: true },
+          { id: uuid(), name: "Left", createdAt, active: true },
+          { id: uuid(), name: "Workout", createdAt, active: true },
+          { id: uuid(), name: "Deep Work", createdAt, active: true },
+        ],
+        checkIns: [],
+        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null },
+      };
+    };
+
+    const loadState = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.version !== 1) return defaultState();
+
+        parsed.types = Array.isArray(parsed.types) ? parsed.types : [];
+        parsed.types = parsed.types.map((t) => {
+          const out = t && typeof t === "object" ? t : {};
+          if (typeof out.active !== "boolean") out.active = true;
+          return out;
+        });
+        parsed.checkIns = Array.isArray(parsed.checkIns) ? parsed.checkIns : [];
+        parsed.ui = parsed.ui && typeof parsed.ui === "object" ? parsed.ui : { sortKey: "createdAt", sortDir: "desc", lastGeo: null };
+        return parsed;
+      } catch {
+        return defaultState();
+      }
+    };
+
+    const saveState = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const toast = (() => {
+      let timer = null;
+      return (title, body = "", ms = 2200) => {
+        const el = $("#toast");
+        $("#toastTitle").textContent = title;
+        $("#toastBody").textContent = body;
+        el.classList.add("show");
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => el.classList.remove("show"), ms);
+      };
+    })();
+
+    const setStatus = (kind, text) => {
+      const el = $("#checkinStatus");
+      el.classList.remove("ok", "err", "warn");
+      if (kind) el.classList.add(kind);
+      el.textContent = text;
+    };
+
+    const escapeHtml = (s) => {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    };
+
+    const getTypeName = (typeId, snapshot) => {
+      const t = state.types.find((x) => x.id === typeId);
+      return t ? t.name : (snapshot || "(deleted type)");
+    };
+
+    const locationToText = (loc) => {
+      if (!loc) return "unknown";
+      if (loc.status === "ok") {
+        const lat = Number(loc.lat);
+        const lng = Number(loc.lng);
+        const acc = Number(loc.accuracy);
+        const accTxt = Number.isFinite(acc) ? ` ±${Math.round(acc)}m` : "";
+        return `${lat.toFixed(5)}, ${lng.toFixed(5)}${accTxt}`;
+      }
+      if (loc.status === "error") return `⚠ ${loc.name || "location error"}`;
+      return "unknown";
+    };
+
+    const getGeo = () => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve({ status: "error", name: "geolocation unavailable" });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({
+            status: "ok",
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            geoTimestamp: pos.timestamp,
+          }),
+          (err) => resolve({
+            status: "error",
+            code: err.code,
+            name: geoErrorName(err.code),
+            message: clampText(err.message, 300),
+          }),
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+        );
+      });
+    };
+
+    const renderCounts = () => {
+      const n = state.checkIns.length;
+      $("#countsPill").textContent = `${n} check-in${n === 1 ? "" : "s"}`;
+      $("#geoPill").textContent = `Location: ${locationToText(state.ui.lastGeo)}`;
+    };
+
+    const renderTypeButtons = () => {
+      const grid = $("#typeGrid");
+      grid.innerHTML = "";
+
+      const activeTypes = state.types.filter((t) => t.active !== false);
+
+      if (!activeTypes.length) {
+        const div = document.createElement("div");
+        div.className = "status warn";
+        const hasInactive = state.types.some((t) => t.active === false);
+        div.textContent = hasInactive ? "No active types. Activate one in Types." : "No active types. Add one in Types.";
+        grid.appendChild(div);
+        return;
+      }
+
+      for (const t of activeTypes) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "type-btn";
+
+        const name = document.createElement("div");
+        name.className = "type-name";
+        name.textContent = t.name;
+
+        const sub = document.createElement("div");
+        sub.className = "type-sub";
+        sub.textContent = "Tap to check in";
+
+        btn.appendChild(name);
+        btn.appendChild(sub);
+
+        btn.addEventListener("click", () => doCheckIn(t.id));
+        grid.appendChild(btn);
+      }
+    };
+
+    const renderTypes = () => {
+      const activeList = $("#typeListActive");
+      const inactiveList = $("#typeListInactive");
+      if (!activeList || !inactiveList) return;
+
+      const active = state.types.filter((t) => t.active !== false);
+      const inactive = state.types.filter((t) => t.active === false);
+
+      $("#typesCountActive").textContent = String(active.length);
+      $("#typesCountInactive").textContent = String(inactive.length);
+
+      activeList.innerHTML = "";
+      inactiveList.innerHTML = "";
+
+      const mkMeta = (t) => {
+        const meta = document.createElement("div");
+        meta.className = "muted";
+        meta.textContent = `Created ${fmtDateTime(t.createdAt)}`;
+        return meta;
+      };
+
+      const mkActiveItem = (t) => {
+        const item = document.createElement("div");
+        item.className = "type-item";
+
+        const h = document.createElement("h3");
+        h.textContent = t.name;
+
+        const row = document.createElement("div");
+        row.className = "row wrap";
+
+        const rename = document.createElement("button");
+        rename.type = "button";
+        rename.className = "btn small primary";
+        rename.textContent = "Rename";
+        rename.addEventListener("click", () => renameTypeFlow(t.id));
+
+        const archive = document.createElement("button");
+        archive.type = "button";
+        archive.className = "btn small danger";
+        archive.textContent = "Archive";
+        archive.addEventListener("click", () => archiveTypeFlow(t.id));
+
+        row.appendChild(rename);
+        row.appendChild(archive);
+        row.appendChild(document.createElement("div")).className = "spacer";
+
+        item.appendChild(h);
+        item.appendChild(mkMeta(t));
+        item.appendChild(row);
+        return item;
+      };
+
+      const mkInactiveItem = (t) => {
+        const item = document.createElement("div");
+        item.className = "type-item";
+
+        const h = document.createElement("h3");
+        h.textContent = t.name;
+
+        const row = document.createElement("div");
+        row.className = "row wrap";
+
+        const activate = document.createElement("button");
+        activate.type = "button";
+        activate.className = "btn small primary";
+        activate.textContent = "Activate";
+        activate.addEventListener("click", () => activateTypeFlow(t.id));
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "btn small danger";
+        del.textContent = "Delete";
+        del.addEventListener("click", () => deleteTypePermanentlyFlow(t.id));
+
+        row.appendChild(activate);
+        row.appendChild(del);
+        row.appendChild(document.createElement("div")).className = "spacer";
+
+        item.appendChild(h);
+        item.appendChild(mkMeta(t));
+        item.appendChild(row);
+        return item;
+      };
+
+      if (!active.length) {
+        const div = document.createElement("div");
+        div.className = "status warn";
+        div.textContent = "No active types.";
+        activeList.appendChild(div);
+      } else {
+        for (const t of active) activeList.appendChild(mkActiveItem(t));
+      }
+
+      if (!inactive.length) {
+        const div = document.createElement("div");
+        div.className = "status";
+        div.textContent = "No inactive types.";
+        inactiveList.appendChild(div);
+      } else {
+        for (const t of inactive) inactiveList.appendChild(mkInactiveItem(t));
+      }
+    };
+
+    const sortCompare = (a, b, key) => {
+      if (key === "createdAt") return a.createdAt - b.createdAt;
+      if (key === "notes") return (a.notes || "").localeCompare(b.notes || "", undefined, { sensitivity: "base" });
+      if (key === "type") {
+        const an = getTypeName(a.typeId, a.typeNameSnapshot);
+        const bn = getTypeName(b.typeId, b.typeNameSnapshot);
+        return an.localeCompare(bn, undefined, { sensitivity: "base" });
+      }
+      if (key === "location") {
+        const al = locationToText(a.location);
+        const bl = locationToText(b.location);
+        return al.localeCompare(bl, undefined, { sensitivity: "base" });
+      }
+      return 0;
+    };
+
+    const renderHistory = () => {
+      const body = $("#historyBody");
+      body.innerHTML = "";
+
+      const items = state.checkIns.slice();
+      const { sortKey, sortDir } = state.ui;
+
+      items.sort((a, b) => {
+        const c = sortCompare(a, b, sortKey);
+        return sortDir === "asc" ? c : -c;
+      });
+
+      $("#historyPill").textContent = `History (${items.length})`;
+
+      if (!items.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.className = "muted";
+        td.textContent = "No check-ins yet.";
+        tr.appendChild(td);
+        body.appendChild(tr);
+        return;
+      }
+
+      for (const it of items) {
+        const tr = document.createElement("tr");
+
+        const tdDate = document.createElement("td");
+        tdDate.textContent = fmtDateTime(it.createdAt);
+
+        const tdLoc = document.createElement("td");
+        const locText = locationToText(it.location);
+        tdLoc.innerHTML = `<span class=\"mono\">${escapeHtml(locText)}</span>`;
+
+        const tdType = document.createElement("td");
+        const typeBtn = document.createElement("button");
+        typeBtn.type = "button";
+        typeBtn.className = "cell-btn";
+        typeBtn.textContent = getTypeName(it.typeId, it.typeNameSnapshot);
+        typeBtn.title = "Edit";
+        typeBtn.addEventListener("click", () => openEditModal(it.id));
+        tdType.appendChild(typeBtn);
+
+        const tdNotes = document.createElement("td");
+        const notesBtn = document.createElement("button");
+        notesBtn.type = "button";
+        notesBtn.className = "cell-btn";
+        notesBtn.textContent = it.notes ? it.notes : "—";
+        if (!it.notes) notesBtn.classList.add("muted");
+        notesBtn.title = "Edit";
+        notesBtn.addEventListener("click", () => openEditModal(it.id));
+        tdNotes.appendChild(notesBtn);
+
+        tr.appendChild(tdDate);
+        tr.appendChild(tdLoc);
+        tr.appendChild(tdType);
+        tr.appendChild(tdNotes);
+
+        body.appendChild(tr);
+      }
+    };
+
+    const setSort = (key) => {
+      if (state.ui.sortKey === key) {
+        state.ui.sortDir = state.ui.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        state.ui.sortKey = key;
+        state.ui.sortDir = key === "createdAt" ? "desc" : "asc";
+      }
+      saveState();
+      renderHistory();
+    };
+
+    let editingId = null;
+
+    const showEditModal = (show) => {
+      const m = $("#editModal");
+      m.classList.toggle("show", !!show);
+      m.setAttribute("aria-hidden", show ? "false" : "true");
+    };
+
+    const closeEditModal = () => {
+      editingId = null;
+      showEditModal(false);
+    };
+
+    const openEditModal = (checkInId) => {
+      const it = state.checkIns.find((x) => x.id === checkInId);
+      if (!it) return;
+
+      editingId = checkInId;
+
+      const currentType = getTypeName(it.typeId, it.typeNameSnapshot);
+      $("#editSub").textContent = fmtDateTime(it.createdAt);
+
+      const sel = $("#editTypeSelect");
+      sel.innerHTML = "";
+
+      const keepOpt = document.createElement("option");
+      keepOpt.value = "__keep__";
+      keepOpt.textContent = `Keep current: ${currentType}`;
+      sel.appendChild(keepOpt);
+
+      const active = state.types.filter((t) => t.active !== false);
+      const inactive = state.types.filter((t) => t.active === false);
+
+      if (active.length) {
+        const og = document.createElement("optgroup");
+        og.label = "Active";
+        for (const t of active) {
+          const opt = document.createElement("option");
+          opt.value = t.id;
+          opt.textContent = t.name;
+          og.appendChild(opt);
+        }
+        sel.appendChild(og);
+      }
+
+      if (inactive.length) {
+        const og = document.createElement("optgroup");
+        og.label = "Inactive";
+        for (const t of inactive) {
+          const opt = document.createElement("option");
+          opt.value = t.id;
+          opt.textContent = t.name;
+          og.appendChild(opt);
+        }
+        sel.appendChild(og);
+      }
+
+      const current = state.types.find((t) => t.id === it.typeId);
+      const hasCurrent = !!current;
+      sel.value = hasCurrent ? it.typeId : "__keep__";
+
+      $("#editTypeHint").textContent = !hasCurrent
+        ? "Original type was deleted. Choose a new one or keep snapshot."
+        : (current.active === false ? "Current type is inactive. You can keep it or change it." : "Change type for this check-in.");
+
+      $("#editNotesInput").value = it.notes || "";
+      showEditModal(true);
+    };
+
+    const saveEditModal = () => {
+      if (!editingId) return;
+      const it = state.checkIns.find((x) => x.id === editingId);
+      if (!it) { closeEditModal(); return; }
+
+      const nextTypeId = $("#editTypeSelect").value;
+      if (nextTypeId && nextTypeId !== "__keep__") {
+        const t = state.types.find((x) => x.id === nextTypeId);
+        if (t) {
+          it.typeId = t.id;
+          it.typeNameSnapshot = t.name;
+        }
+      }
+
+      it.notes = clampText($("#editNotesInput").value, 2000).trim();
+      saveState();
+      renderHistory();
+      toast("Saved", "Check-in updated");
+      closeEditModal();
+    };
+
+    // CSV
+
+    // RFC-4180-ish: quote if contains comma, quote, CR or LF.
+    // Keep newlines as-is inside quoted values.
+    const csvCell = (v) => {
+      const s = String(v ?? "");
+      const needsQuotes = /[\",\r\n]/.test(s);
+      const escaped = s.replaceAll('"', '""');
+      return needsQuotes ? `"${escaped}"` : escaped;
+    };
+
+    const exportCsv = () => {
+      const items = state.checkIns.slice();
+      const { sortKey, sortDir } = state.ui;
+      items.sort((a, b) => {
+        const c = sortCompare(a, b, sortKey);
+        return sortDir === "asc" ? c : -c;
+      });
+
+      const header = [
+        "created_at_local",
+        "created_at_iso",
+        "type",
+        "notes",
+        "location_status",
+        "latitude",
+        "longitude",
+        "accuracy_m",
+        "geo_error",
+      ];
+
+      const rows = [header];
+      for (const it of items) {
+        const loc = it.location || {};
+        const type = getTypeName(it.typeId, it.typeNameSnapshot);
+        const iso = new Date(it.createdAt).toISOString();
+        const local = fmtDateTime(it.createdAt);
+        rows.push([
+          local,
+          iso,
+          type,
+          it.notes || "",
+          loc.status || "unknown",
+          loc.status === "ok" ? String(loc.lat) : "",
+          loc.status === "ok" ? String(loc.lng) : "",
+          loc.status === "ok" && loc.accuracy != null ? String(loc.accuracy) : "",
+          loc.status === "error" ? (loc.name || loc.message || "") : "",
+        ]);
+      }
+
+      // Use CRLF between records for better Excel compatibility.
+      const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `checkins_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      toast("Exported", `${items.length} row(s) to CSV`);
+    };
+
+    // Import
+
+    const checkInKey = (it) => {
+      const typeLabel = (getTypeName(it.typeId, it.typeNameSnapshot) || "").trim().toLowerCase();
+      const notes = (it.notes || "").trim();
+      const t = String(it.createdAt || 0);
+
+      const loc = it.location || null;
+      const status = loc && loc.status ? String(loc.status) : "unknown";
+
+      let lat = "";
+      let lng = "";
+      let acc = "";
+      let err = "";
+
+      if (loc && loc.status === "ok") {
+        const la = Number(loc.lat);
+        const lo = Number(loc.lng);
+        if (Number.isFinite(la)) lat = la.toFixed(6);
+        if (Number.isFinite(lo)) lng = lo.toFixed(6);
+        const a = Number(loc.accuracy);
+        if (Number.isFinite(a)) acc = String(Math.round(a));
+      } else if (loc && loc.status === "error") {
+        err = String(loc.name || loc.message || "").trim();
+      }
+
+      return `${t}|${typeLabel}|${notes}|${status}|${lat}|${lng}|${acc}|${err}`;
+    };
+
+    const parseCsv = (text) => {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let i = 0;
+      let inQuotes = false;
+
+      const pushCell = () => { row.push(cell); cell = ""; };
+      const pushRow = () => {
+        // Avoid pushing a trailing empty row
+        const allEmpty = row.length === 1 && row[0] === "";
+        if (!allEmpty) rows.push(row);
+        row = [];
+      };
+
+      while (i < text.length) {
+        const ch = text[i];
+
+        if (inQuotes) {
+          if (ch === '"') {
+            const next = text[i + 1];
+            if (next === '"') { cell += '"'; i += 2; continue; }
+            inQuotes = false;
+            i += 1;
+            continue;
+          }
+          cell += ch;
+          i += 1;
+          continue;
+        }
+
+        if (ch === '"') { inQuotes = true; i += 1; continue; }
+        if (ch === ',') { pushCell(); i += 1; continue; }
+
+        if (ch === '\n') {
+          pushCell();
+          pushRow();
+          i += 1;
+          continue;
+        }
+
+        if (ch === '\r') {
+          if (text[i + 1] === '\n') {
+            pushCell();
+            pushRow();
+            i += 2;
+            continue;
+          }
+          pushCell();
+          pushRow();
+          i += 1;
+          continue;
+        }
+
+        cell += ch;
+        i += 1;
+      }
+
+      pushCell();
+      pushRow();
+      return rows;
+    };
+
+    const ensureTypeByName = (name, activeDefault) => {
+      const clean = clampText(name, 80).trim();
+      if (!clean) return null;
+
+      const found = state.types.find((t) => String(t.name || "").trim().toLowerCase() === clean.toLowerCase());
+      if (found) return found;
+
+      const t = { id: uuid(), name: clean, createdAt: nowMs(), active: !!activeDefault };
+      state.types.unshift(t);
+      return t;
+    };
+
+    const importCsvText = (text) => {
+      const raw = String(text || "").replace(/^\uFEFF/, "");
+      const rows = parseCsv(raw);
+      if (rows.length < 2) {
+        toast("Import failed", "No data rows found");
+        return;
+      }
+
+      const header = rows[0].map((h) => String(h || "").trim().toLowerCase());
+      const idx = (name) => header.indexOf(name);
+
+      const iIso = idx("created_at_iso");
+      const iLocal = idx("created_at_local");
+      const iType = idx("type");
+      const iNotes = idx("notes");
+      const iLocStatus = idx("location_status");
+      const iLat = idx("latitude");
+      const iLng = idx("longitude");
+      const iAcc = idx("accuracy_m");
+      const iErr = idx("geo_error");
+
+      if (iType < 0 || (iIso < 0 && iLocal < 0)) {
+        toast("Import failed", "Missing required columns (type + created_at_iso/created_at_local)");
+        return;
+      }
+
+      const existing = new Set(state.checkIns.map(checkInKey));
+
+      let added = 0;
+      let dup = 0;
+      let bad = 0;
+      let newTypes = 0;
+
+      for (let r = 1; r < rows.length; r += 1) {
+        const row = rows[r];
+        const get = (i) => (i >= 0 && i < row.length ? String(row[i] ?? "") : "");
+
+        const typeName = clampText(get(iType), 80).trim();
+        if (!typeName) { bad += 1; continue; }
+
+        const iso = get(iIso).trim();
+        const local = get(iLocal).trim();
+
+        let ms = NaN;
+        if (iso) {
+          const t = Date.parse(iso);
+          if (Number.isFinite(t)) ms = t;
+        }
+        if (!Number.isFinite(ms) && local) {
+          const t = Date.parse(local);
+          if (Number.isFinite(t)) ms = t;
+        }
+        if (!Number.isFinite(ms)) { bad += 1; continue; }
+
+        const notes = clampText(get(iNotes), 2000).trim();
+
+        // Rule: imported types not currently active become (or remain) inactive.
+        let t = state.types.find((x) => String(x.name || "").trim().toLowerCase() === typeName.toLowerCase());
+        if (!t) {
+          t = ensureTypeByName(typeName, false);
+          if (t) newTypes += 1;
+        }
+        if (!t) { bad += 1; continue; }
+
+        const statusRaw = get(iLocStatus).trim().toLowerCase();
+        let location = null;
+
+        if (statusRaw === "ok") {
+          const la = Number.parseFloat(get(iLat));
+          const lo = Number.parseFloat(get(iLng));
+          const a = Number.parseFloat(get(iAcc));
+          if (Number.isFinite(la) && Number.isFinite(lo)) {
+            location = {
+              status: "ok",
+              lat: la,
+              lng: lo,
+              accuracy: Number.isFinite(a) ? a : null,
+              geoTimestamp: null,
+            };
+          }
+        } else if (statusRaw === "error") {
+          const err = clampText(get(iErr), 300).trim();
+          location = { status: "error", name: err || "location error", message: "" };
+        }
+
+        const candidate = {
+          createdAt: ms,
+          typeId: t.id,
+          typeNameSnapshot: t.name,
+          notes,
+          location,
+        };
+
+        const key = checkInKey(candidate);
+        if (existing.has(key)) { dup += 1; continue; }
+
+        existing.add(key);
+        state.checkIns.unshift({ id: "c_" + uuid(), ...candidate });
+        added += 1;
+      }
+
+      try {
+        saveState();
+      } catch {
+        toast("Import failed", "Storage quota exceeded");
+        return;
+      }
+
+      renderAll();
+      toast("Imported", `${added} added, ${dup} duplicate(s) skipped, ${bad} bad row(s), ${newTypes} new inactive type(s)`);
+    };
+
+    // Types CRUD
+
+    const addType = (name) => {
+      const clean = clampText(name, 80).trim();
+      if (!clean) return { ok: false, msg: "Type name required" };
+
+      const exists = state.types.some((t) => String(t.name || "").toLowerCase() === clean.toLowerCase());
+      if (exists) {
+        const inactive = state.types.some((t) => String(t.name || "").toLowerCase() === clean.toLowerCase() && t.active === false);
+        return { ok: false, msg: inactive ? "Type exists (inactive). Activate it in Inactive types." : "Type already exists" };
+      }
+
+      state.types.unshift({ id: uuid(), name: clean, createdAt: nowMs(), active: true });
+      saveState();
+      return { ok: true };
+    };
+
+    const renameTypeFlow = (typeId) => {
+      const t = state.types.find((x) => x.id === typeId);
+      if (!t) return;
+      const next = prompt("Rename type", t.name);
+      if (next == null) return;
+      const clean = clampText(next, 80).trim();
+      if (!clean) { toast("Invalid", "Name required"); return; }
+
+      const exists = state.types.some((x) => x.id !== typeId && String(x.name || "").toLowerCase() === clean.toLowerCase());
+      if (exists) { toast("Invalid", "Type already exists"); return; }
+
+      t.name = clean;
+      saveState();
+      renderAll();
+      toast("Renamed", clean);
+    };
+
+    const archiveTypeFlow = (typeId) => {
+      const t = state.types.find((x) => x.id === typeId);
+      if (!t) return;
+      const ok = confirm(`Archive type "${t.name}"?`);
+      if (!ok) return;
+      t.active = false;
+      saveState();
+      renderAll();
+      toast("Archived", t.name);
+    };
+
+    const activateTypeFlow = (typeId) => {
+      const t = state.types.find((x) => x.id === typeId);
+      if (!t) return;
+      t.active = true;
+      saveState();
+      renderAll();
+      toast("Activated", t.name);
+    };
+
+    const deleteTypePermanentlyFlow = (typeId) => {
+      const t = state.types.find((x) => x.id === typeId);
+      if (!t) return;
+      const ok = confirm(`Delete type "${t.name}" permanently?`);
+      if (!ok) return;
+
+      for (const it of state.checkIns) {
+        if (it.typeId === typeId && !it.typeNameSnapshot) it.typeNameSnapshot = t.name;
+      }
+
+      state.types = state.types.filter((x) => x.id !== typeId);
+      saveState();
+      renderAll();
+      toast("Deleted", t.name);
+    };
+
+    const disableTypeButtons = (disabled) => {
+      $$("#typeGrid button").forEach((b) => { b.disabled = disabled; });
+    };
+
+    const doCheckIn = async (typeId) => {
+      const t = state.types.find((x) => x.id === typeId);
+      if (!t) { toast("Error", "Unknown type"); return; }
+      if (t.active === false) { toast("Error", "Type is inactive"); return; }
+
+      const note = clampText($("#noteInput").value, 2000).trim();
+
+      setStatus("warn", "Getting location...");
+      disableTypeButtons(true);
+
+      const startedAt = nowMs();
+      const loc = await getGeo();
+      state.ui.lastGeo = loc;
+
+      const checkIn = {
+        id: "c_" + uuid(),
+        createdAt: startedAt,
+        typeId,
+        typeNameSnapshot: t.name,
+        notes: note,
+        location: loc,
+      };
+
+      state.checkIns.unshift(checkIn);
+      saveState();
+
+      $("#noteInput").value = "";
+
+      const locText = locationToText(loc);
+      if (loc.status === "ok") {
+        setStatus("ok", `Checked in: ${t.name} at ${locText}`);
+        toast("Checked in", t.name);
+      } else {
+        setStatus("warn", `Checked in: ${t.name} (location: ${locText})`);
+        toast("Checked in (no GPS)", t.name);
+      }
+
+      disableTypeButtons(false);
+      renderCounts();
+      renderHistory();
+    };
+
+    const refreshGeo = async () => {
+      $("#btnRefreshGeo").disabled = true;
+      setStatus("warn", "Refreshing location...");
+      const loc = await getGeo();
+      state.ui.lastGeo = loc;
+      saveState();
+      renderCounts();
+      setStatus(loc.status === "ok" ? "ok" : "warn", loc.status === "ok" ? `Location updated: ${locationToText(loc)}` : `Location unavailable: ${locationToText(loc)}`);
+      $("#btnRefreshGeo").disabled = false;
+    };
+
+    const showSection = (name) => {
+      const sections = { checkin: $("#sec-checkin"), history: $("#sec-history"), types: $("#sec-types") };
+      for (const k of Object.keys(sections)) sections[k].classList.toggle("active", k === name);
+      $("#tab-checkin").classList.toggle("active", name === "checkin");
+      $("#tab-history").classList.toggle("active", name === "history");
+      $("#tab-types").classList.toggle("active", name === "types");
+    };
+
+    const resetAll = () => {
+      const ok = confirm("Reset all data? This deletes all types and check-ins.");
+      if (!ok) return;
+      state = defaultState();
+      saveState();
+      renderAll();
+      toast("Reset", "All data cleared");
+      setStatus(null, "Ready.");
+    };
+
+    const renderAll = () => {
+      renderTypeButtons();
+      renderCounts();
+      renderHistory();
+      renderTypes();
+    };
+
+    // Self-tests (console only; toast on fail)
+
+    const runSelfTests = () => {
+      const fail = (msg) => { throw new Error(msg); };
+
+      // csvCell
+      if (csvCell("a,b") !== '"a,b"') fail("csvCell: comma quoting");
+      if (csvCell("a\n b") !== '"a\n b"') fail("csvCell: newline quoting");
+      if (csvCell("a\r\n b") !== '"a\r\n b"') fail("csvCell: CRLF quoting");
+      if (csvCell('a"b') !== '"a""b"') fail("csvCell: quote escaping");
+
+      // parseCsv
+      {
+        const r = parseCsv("a,b\n1,2\n");
+        if (r.length !== 2) fail("parseCsv: basic rows");
+        if (r[1][0] !== "1" || r[1][1] !== "2") fail("parseCsv: basic values");
+      }
+      {
+        const r = parseCsv("a,b\r\n1,2\r\n");
+        if (r.length !== 2) fail("parseCsv: CRLF rows");
+        if (r[1][0] !== "1" || r[1][1] !== "2") fail("parseCsv: CRLF values");
+      }
+      {
+        const r = parseCsv('a,b\n"x,y",z\n');
+        if (r[1][0] !== "x,y" || r[1][1] !== "z") fail("parseCsv: quoted comma");
+      }
+      {
+        const r = parseCsv('a,b\r\n"x\n y",z\r\n');
+        if (r[1][0] !== "x\n y" || r[1][1] !== "z") fail("parseCsv: quoted newline + CRLF");
+      }
+      {
+        const r = parseCsv('a,b\n"x\r\n y",z\n');
+        if (r[1][0] !== "x\r\n y" || r[1][1] !== "z") fail("parseCsv: quoted CRLF newline");
+      }
+
+      return true;
+    };
+
+    let state = loadState();
+
+    // Wire UI
+
+    $("#tab-checkin").addEventListener("click", () => showSection("checkin"));
+    $("#tab-history").addEventListener("click", () => showSection("history"));
+    $("#tab-types").addEventListener("click", () => showSection("types"));
+
+    $("#btnAddType").addEventListener("click", () => {
+      const name = $("#newTypeName").value;
+      const res = addType(name);
+      if (!res.ok) { toast("Invalid", res.msg); return; }
+      $("#newTypeName").value = "";
+      renderAll();
+      toast("Added", "Type created");
+    });
+
+    $("#newTypeName").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); $("#btnAddType").click(); }
+    });
+
+    $("#btnExportCsv").addEventListener("click", exportCsv);
+
+    const fileImport = $("#fileImportCsv");
+    $("#btnImportCsv").addEventListener("click", () => {
+      if (!fileImport) return;
+      fileImport.value = "";
+      fileImport.click();
+    });
+
+    if (fileImport) {
+      fileImport.addEventListener("change", () => {
+        const f = fileImport.files && fileImport.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => importCsvText(reader.result);
+        reader.onerror = () => toast("Import failed", "Could not read file");
+        reader.readAsText(f);
+      });
+    }
+
+    $("#btnEditClose").addEventListener("click", closeEditModal);
+    $("#btnEditCancel").addEventListener("click", closeEditModal);
+    $("#btnEditSave").addEventListener("click", saveEditModal);
+
+    $("#editModal").addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close) closeEditModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!$("#editModal").classList.contains("show")) return;
+      closeEditModal();
+    });
+
+    $("#btnRefreshGeo").addEventListener("click", refreshGeo);
+    $("#btnReset").addEventListener("click", resetAll);
+    $$("thead th").forEach((th) => th.addEventListener("click", () => setSort(th.dataset.sort)));
+
+    // First render
+    renderAll();
+
+    try {
+      runSelfTests();
+    } catch (e) {
+      console.error(e);
+      toast("Internal error", String(e && e.message ? e.message : e));
+    }
+
+    // Opportunistic initial geo cache if permission already granted
+    setTimeout(() => {
+      if (state.ui.lastGeo) return;
+      if (!navigator.permissions || !navigator.permissions.query) return;
+      navigator.permissions.query({ name: "geolocation" }).then((p) => {
+        if (p.state === "granted") refreshGeo();
+      }).catch(() => {});
+    }, 600);
+  </script>
+</body>
+</html>
