@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#667eea" />
+  <meta name="theme-color" content="#2CA4FC" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Check-ins" />
   <link rel="icon" type="image/png" href="check-ins.png" />
@@ -13,21 +13,28 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg1: rgb(102, 126, 234);
-      --bg2: rgb(118, 75, 162);
+      --brand1: rgb(44, 164, 252);   /* #2CA4FC */
+      --brand2: rgb(36, 164, 156);   /* #24A49C */
+      --brand3: rgb(84, 204, 156);   /* #54CC9C */
+      --brandDeep: rgb(10, 56, 84);
+
+      --bg1: var(--brand1);
+      --bg2: var(--brand2);
+
       --card: rgb(255, 255, 255);
-      --text: rgb(32, 33, 36);
-      --muted: rgb(102, 102, 102);
-      --border: rgb(232, 234, 237);
+      --text: rgb(20, 27, 35);
+      --muted: rgb(96, 108, 120);
+      --border: rgb(230, 234, 240);
       --danger: rgb(220, 38, 38);
       --ok: rgb(22, 163, 74);
       --warn: rgb(234, 179, 8);
-      --shadow: rgba(0, 0, 0, 0.12);
+      --shadow: rgba(0, 0, 0, 0.14);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 55%),
+                  linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
       min-height: 100vh;
       color: var(--text);
       padding: 14px;
@@ -45,7 +52,25 @@
     .header h1 {
       font-size: 1.8rem;
       line-height: 1.1;
-      text-shadow: rgba(0, 0, 0, 0.25) 2px 2px 4px;
+      text-shadow: rgba(0, 0, 0, 0.18) 1px 2px 6px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.20);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .brand span {
+      letter-spacing: -0.02em;
     }
 
     .header p { margin-top: 6px; font-size: 0.95rem; opacity: 0.9; }
@@ -93,7 +118,16 @@
       outline: none;
     }
 
-    input[type="text"]:focus, textarea:focus, select:focus { border-color: rgba(102, 126, 234, 0.8); }
+    .select-small {
+      width: auto;
+      min-width: 120px;
+      max-width: 180px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      border-radius: 999px;
+    }
+
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: rgba(44, 164, 252, 0.85); box-shadow: 0 0 0 3px rgba(44, 164, 252, 0.18); }
 
     .hint { margin-top: 8px; color: var(--muted); font-size: 0.85rem; line-height: 1.35; }
 
@@ -108,9 +142,10 @@
     }
 
     .btn.primary {
-      background: rgb(255, 255, 255);
-      color: rgb(84, 93, 210);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: linear-gradient(135deg, var(--brand1) 0%, var(--brand3) 100%);
+      color: rgb(255, 255, 255);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 8px 18px rgba(10, 56, 84, 0.20);
     }
 
     .btn.small { padding: 10px 12px; font-size: 0.95rem; border-radius: 12px; }
@@ -131,16 +166,18 @@
     }
 
     .type-btn {
-      background: rgb(255, 255, 255);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(44, 164, 252, 0.22);
       border-radius: 16px;
       padding: 14px 12px;
       text-align: left;
       min-height: 58px;
       cursor: pointer;
-      box-shadow: rgba(0, 0, 0, 0.08) 0 3px 10px;
-      transition: transform 0.06s;
+      box-shadow: rgba(10, 56, 84, 0.10) 0 6px 18px;
+      transition: transform 0.06s, box-shadow 0.12s, border-color 0.12s;
     }
+
+    .type-btn:hover { border-color: rgba(36, 164, 156, 0.40); box-shadow: rgba(10, 56, 84, 0.14) 0 8px 22px; }
 
     .type-btn:active { transform: scale(0.985); }
 
@@ -154,9 +191,10 @@
       padding: 8px 10px;
       border-radius: 999px;
       font-size: 0.9rem;
-      background: rgb(245, 246, 255);
-      border: 1px solid rgba(102, 126, 234, 0.25);
-      color: rgb(55, 65, 170);
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(44, 164, 252, 0.28);
+      color: rgb(10, 56, 84);
+      box-shadow: 0 6px 14px rgba(10, 56, 84, 0.10);
     }
 
     .status {
@@ -179,8 +217,9 @@
       right: 0;
       bottom: 0;
       padding: 10px 14px 16px;
-      background: rgba(0, 0, 0, 0.12);
+      background: linear-gradient(135deg, rgba(44, 164, 252, 0.55) 0%, rgba(36, 164, 156, 0.55) 100%);
       backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
     }
 
     .tabs-inner {
@@ -192,8 +231,8 @@
     }
 
     .tab {
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      background: rgba(255, 255, 255, 0.16);
       color: rgb(255, 255, 255);
       border-radius: 14px;
       padding: 12px 10px;
@@ -201,10 +240,12 @@
       cursor: pointer;
     }
 
+    .tab:active { opacity: 0.92; }
+
     .tab.active {
-      background: rgba(255, 255, 255, 0.9);
-      color: rgb(102, 126, 234);
-      border-color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
+      color: rgb(10, 56, 84);
+      border-color: rgba(255, 255, 255, 0.92);
     }
 
     .section { display: none; }
@@ -324,7 +365,10 @@
 <body>
   <div class="app" role="application">
     <div class="header">
-      <h1>Check-ins</h1>
+      <h1 class="brand">
+        <img class="brand-logo" src="check-ins.png" alt="" />
+        <span>Check-ins</span>
+      </h1>
       <p>One tap. Stores time + coordinates + street address + type + optional notes.</p>
     </div>
 
@@ -354,6 +398,8 @@
       <div class="card">
         <div class="row wrap" style="margin-bottom: 10px;">
           <div class="pill" id="historyPill">History</div>
+          <select id="historyYearSelect" class="select-small" aria-label="Year"></select>
+          <select id="historyTypeSelect" class="select-small" aria-label="Type"></select>
           <div class="spacer"></div>
           <button id="btnImportCsv" class="btn small primary" type="button">Import CSV</button>
           <button id="btnExportCsv" class="btn small primary" type="button">Export CSV</button>
@@ -492,6 +538,53 @@
       return f.format(dt);
     };
 
+    const currentYear = () => new Date().getFullYear();
+
+    const yearFromMs = (ms) => {
+      const d = new Date(ms);
+      const y = d.getFullYear();
+      return Number.isFinite(y) ? y : null;
+    };
+
+    const listYearsFromCheckIns = (checkIns, currentY, selectedY) => {
+      const set = new Set();
+      if (Number.isFinite(currentY)) set.add(currentY);
+      if (Number.isFinite(selectedY)) set.add(selectedY);
+
+      const items = Array.isArray(checkIns) ? checkIns : [];
+      for (const it of items) {
+        const ms = it && typeof it.createdAt === "number" ? it.createdAt : NaN;
+        const y = yearFromMs(ms);
+        if (y != null) set.add(y);
+      }
+
+      return Array.from(set).sort((a, b) => b - a);
+    };
+
+    const getSelectedHistoryYear = () => {
+      const y = Number(state.ui.historyYear);
+      const cy = currentYear();
+      return Number.isFinite(y) ? y : cy;
+    };
+
+    const getSelectedHistoryTypeFilter = () => {
+      const v = state && state.ui ? state.ui.historyType : "";
+      return typeof v === "string" ? v : "";
+    };
+
+    const typeFilterKeyForCheckIn = (it) => {
+      const t = state.types.find((x) => x.id === it.typeId);
+      if (t) return `id:${t.id}`;
+      const snap = String(it.typeNameSnapshot || "(deleted type)");
+      return `snap:${snap}`;
+    };
+
+    const typeFilterLabelForCheckIn = (it) => {
+      const label = getTypeName(it.typeId, it.typeNameSnapshot);
+      const t = state.types.find((x) => x.id === it.typeId);
+      return t ? label : `${label} (deleted)`;
+    };
+
     const clampText = (s, max = 2000) => {
       if (s == null) return "";
       const t = String(s);
@@ -522,7 +615,7 @@
           { id: uuid(), name: "Deep Work", createdAt, active: true },
         ],
         checkIns: [],
-        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null },
+        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null, historyYear: currentYear(), historyType: "" },
       };
     };
 
@@ -555,6 +648,13 @@
           : { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null };
 
         if (!("lastAddress" in parsed.ui)) parsed.ui.lastAddress = null;
+
+        if (!("historyYear" in parsed.ui)) parsed.ui.historyYear = currentYear();
+        const hy = Number(parsed.ui.historyYear);
+        parsed.ui.historyYear = Number.isFinite(hy) ? hy : currentYear();
+
+        if (!("historyType" in parsed.ui)) parsed.ui.historyType = "";
+        parsed.ui.historyType = typeof parsed.ui.historyType === "string" ? parsed.ui.historyType : "";
 
         return parsed;
       } catch {
@@ -740,6 +840,8 @@
 
       saveState();
       renderCounts();
+      renderHistoryYearSelect();
+      renderHistoryTypeSelect();
       renderHistory();
     };
 
@@ -907,11 +1009,91 @@
       return 0;
     };
 
+    const renderHistoryYearSelect = () => {
+      const sel = $("#historyYearSelect");
+      if (!sel) return;
+
+      const cy = currentYear();
+      const selected = Number(state.ui.historyYear);
+      const desired = Number.isFinite(selected) ? selected : cy;
+      const years = listYearsFromCheckIns(state.checkIns, cy, desired);
+
+      state.ui.historyYear = desired;
+
+      sel.innerHTML = "";
+      for (const y of years) {
+        const opt = document.createElement("option");
+        opt.value = String(y);
+        opt.textContent = String(y);
+        sel.appendChild(opt);
+      }
+      sel.value = String(desired);
+    };
+
+    const getHistoryItemsForSelectedYear = () => {
+      const year = getSelectedHistoryYear();
+      const items = state.checkIns.filter((it) => yearFromMs(it.createdAt) === year);
+      return { year, items };
+    };
+
+    const listTypeFiltersFromItems = (items) => {
+      const m = new Map();
+      const list = Array.isArray(items) ? items : [];
+      for (const it of list) {
+        const k = typeFilterKeyForCheckIn(it);
+        if (!m.has(k)) m.set(k, typeFilterLabelForCheckIn(it));
+      }
+      const out = Array.from(m.entries()).map(([key, label]) => ({ key, label }));
+      out.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+      return out;
+    };
+
+    const renderHistoryTypeSelect = () => {
+      const sel = $("#historyTypeSelect");
+      if (!sel) return;
+
+      const { items } = getHistoryItemsForSelectedYear();
+      const opts = listTypeFiltersFromItems(items);
+
+      const desired = getSelectedHistoryTypeFilter();
+      const keys = new Set(opts.map((o) => o.key));
+      const effective = desired && keys.has(desired) ? desired : "";
+
+      sel.innerHTML = "";
+
+      {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "All types";
+        sel.appendChild(opt);
+      }
+
+      for (const o of opts) {
+        const opt = document.createElement("option");
+        opt.value = o.key;
+        opt.textContent = o.label;
+        sel.appendChild(opt);
+      }
+
+      sel.value = effective;
+
+      if (state.ui.historyType !== effective) state.ui.historyType = effective;
+    };
+
+    const getHistoryItemsForSelectedYearAndType = () => {
+      const { year, items } = getHistoryItemsForSelectedYear();
+      const tf = getSelectedHistoryTypeFilter();
+      if (!tf) return { year, items };
+      return { year, items: items.filter((it) => typeFilterKeyForCheckIn(it) === tf) };
+    };
+
     const renderHistory = () => {
       const body = $("#historyBody");
       body.innerHTML = "";
 
-      const items = state.checkIns.slice();
+      const { year, items: itemsUnsorted } = getHistoryItemsForSelectedYearAndType();
+
+      const items = itemsUnsorted.slice();
       const { sortKey, sortDir } = state.ui;
 
       items.sort((a, b) => {
@@ -919,14 +1101,14 @@
         return sortDir === "asc" ? c : -c;
       });
 
-      $("#historyPill").textContent = `History (${items.length})`;
+      $("#historyPill").textContent = `History ${year} (${items.length})`;
 
       if (!items.length) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.colSpan = 4;
         td.className = "muted";
-        td.textContent = "No check-ins yet.";
+        td.textContent = "No check-ins for this year.";
         tr.appendChild(td);
         body.appendChild(tr);
         return;
@@ -1089,8 +1271,16 @@
       return csvNeedsQuotes(s) ? `"${escaped}"` : escaped;
     };
 
+    const makeCsv = (rows) => {
+      const safeRows = Array.isArray(rows) ? rows : [];
+      return safeRows
+        .map((r) => (Array.isArray(r) ? r : []).map(csvCell).join(","))
+        .join("\r\n");
+    };
+
     const exportCsv = () => {
       const items = state.checkIns.slice();
+
       const { sortKey, sortDir } = state.ui;
       items.sort((a, b) => {
         const c = sortCompare(a, b, sortKey);
@@ -1135,19 +1325,19 @@
         ]);
       }
 
-      const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+      const csv = makeCsv(rows);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `checkins_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `checkins_all_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
 
-      toast("Exported", `${items.length} row(s) to CSV`);
+      toast("Exported", `${items.length} row(s) to CSV (all years)`);
     };
 
     // Import
@@ -1496,6 +1686,8 @@
         setStatus("ok", `Checked in: ${t.name} (resolving address...)`);
         toast("Checked in", t.name);
         renderCounts();
+        renderHistoryYearSelect();
+        renderHistoryTypeSelect();
         renderHistory();
         disableTypeButtons(false);
         resolveAddressForCheckIn(checkIn.id);
@@ -1562,6 +1754,8 @@
     const renderAll = () => {
       renderTypeButtons();
       renderCounts();
+      renderHistoryYearSelect();
+      renderHistoryTypeSelect();
       renderHistory();
       renderTypes();
     };
@@ -1611,6 +1805,42 @@
         const j = { name: "", display_name: "X", address: { road: "Main St", house_number: "1", city: "Helsinki", postcode: "00100", country: "Finland" } };
         const a = formatNominatimAddress(j);
         if (!a.includes("Main St") || !a.includes("1")) fail("formatNominatimAddress: street + number");
+      }
+
+      // listYearsFromCheckIns
+      {
+        const ms23 = Date.UTC(2023, 0, 1);
+        const ms25 = Date.UTC(2025, 0, 1);
+        const years = listYearsFromCheckIns([{ createdAt: ms23 }, { createdAt: ms25 }], 2025, 2024);
+        if (years.join(",") !== "2025,2024,2023") fail("listYearsFromCheckIns: includes current + selected + data years");
+      }
+      {
+        const years = listYearsFromCheckIns([], 2026, NaN);
+        if (years.join(",") !== "2026") fail("listYearsFromCheckIns: current year only when empty");
+      }
+
+      // makeCsv
+      {
+        const csv = makeCsv([["a", "b"], ["1", "2"]]);
+        if (csv !== "a,b\r\n1,2") fail("makeCsv: CRLF row join");
+      }
+      {
+        const csv = makeCsv([["a", "b"], ["x\n y", "z"]]);
+        if (csv !== "a,b\r\n\"x\n y\",z") fail("makeCsv: quotes newline cell");
+      }
+
+      // history type filter helpers
+      {
+        const saved = state;
+        state = defaultState();
+        const tid = state.types[0].id;
+        const it = { createdAt: nowMs(), typeId: tid, typeNameSnapshot: state.types[0].name, notes: "", location: null, address: null };
+        const k1 = typeFilterKeyForCheckIn(it);
+        if (k1 !== `id:${tid}`) fail("typeFilterKeyForCheckIn: id");
+        state.types = state.types.filter((t) => t.id !== tid);
+        const k2 = typeFilterKeyForCheckIn(it);
+        if (!k2.startsWith("snap:")) fail("typeFilterKeyForCheckIn: snapshot");
+        state = saved;
       }
 
       return true;
@@ -1675,6 +1905,28 @@
     $("#btnRefreshGeo").addEventListener("click", refreshGeo);
     $("#btnReset").addEventListener("click", resetAll);
     $$("thead th").forEach((th) => th.addEventListener("click", () => setSort(th.dataset.sort)));
+
+    const yearSelect = $("#historyYearSelect");
+    if (yearSelect) {
+      yearSelect.addEventListener("change", () => {
+        const y = Number(yearSelect.value);
+        state.ui.historyYear = Number.isFinite(y) ? y : currentYear();
+        saveState();
+        renderHistoryYearSelect();
+        renderHistoryTypeSelect();
+        renderHistory();
+      });
+    }
+
+    const typeSelect = $("#historyTypeSelect");
+    if (typeSelect) {
+      typeSelect.addEventListener("change", () => {
+        state.ui.historyType = String(typeSelect.value || "");
+        saveState();
+        renderHistoryTypeSelect();
+        renderHistory();
+      });
+    }
 
     // First render
     renderAll();
