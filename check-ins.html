@@ -520,7 +520,7 @@
           <div class="modal-sub" id="editSub"></div>
         </div>
         <div class="spacer"></div>
-        <button id="btnEditClose" class="btn small danger" type="button">Close</button>
+        <button id="btnEditClose" class="btn small danger" type="button">Delete</button>
       </div>
 
       <div>
@@ -1382,6 +1382,39 @@
       closeEditModal();
     };
 
+    const deleteCheckInById = (id) => {
+      const before = state.checkIns.length;
+      state.checkIns = state.checkIns.filter((x) => x.id !== id);
+      return state.checkIns.length !== before;
+    };
+
+    const deleteEditModal = () => {
+      if (!editingId) return;
+      const id = editingId;
+      const it = state.checkIns.find((x) => x.id === id);
+      if (!it) { closeEditModal(); return; }
+
+      const typeName = getTypeName(it.typeId, it.typeNameSnapshot);
+      const when = fmtDateTime(it.createdAt);
+      const okConfirm = confirm(`Delete this check-in?
+
+${when}
+${typeName}`);
+      if (!okConfirm) return;
+
+      const ok = deleteCheckInById(id);
+      if (!ok) { closeEditModal(); return; }
+
+      saveState();
+      renderCounts();
+      renderHistoryYearSelect();
+      renderHistoryTypeSelect();
+      renderHistory();
+
+      toast("Deleted", "Check-in removed");
+      closeEditModal();
+    };
+
     // CSV
 
     const csvNeedsQuotes = (s) => {
@@ -1993,6 +2026,29 @@
         state = saved;
       }
 
+      // deleteCheckInById
+      {
+        const saved = state;
+        state = defaultState();
+        const id = "c_test_delete";
+        state.checkIns.unshift({
+          id,
+          createdAt: nowMs(),
+          typeId: state.types[0].id,
+          typeNameSnapshot: state.types[0].name,
+          notes: "x",
+          location: null,
+          address: null,
+        });
+        const before = state.checkIns.length;
+        const ok = deleteCheckInById(id);
+        if (!ok) fail("deleteCheckInById: returns true");
+        if (state.checkIns.length !== before - 1) fail("deleteCheckInById: removes item");
+        const ok2 = deleteCheckInById(id);
+        if (ok2) fail("deleteCheckInById: returns false when missing");
+        state = saved;
+      }
+
       return true;
     };
 
@@ -2035,7 +2091,7 @@
       });
     }
 
-    $("#btnEditClose").addEventListener("click", closeEditModal);
+    $("#btnEditClose").addEventListener("click", deleteEditModal);
     $("#btnEditCancel").addEventListener("click", closeEditModal);
     $("#btnEditSave").addEventListener("click", saveEditModal);
 
