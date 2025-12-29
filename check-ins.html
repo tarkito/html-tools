@@ -69,9 +69,7 @@
       background: rgba(255, 255, 255, 0.18);
     }
 
-    .brand span {
-      letter-spacing: -0.02em;
-    }
+    .brand span { letter-spacing: -0.02em; }
 
     .header p { margin-top: 6px; font-size: 0.95rem; opacity: 0.9; }
 
@@ -134,7 +132,10 @@
       border-radius: 999px;
     }
 
-    input[type="text"]:focus, textarea:focus, select:focus { border-color: rgba(44, 164, 252, 0.85); box-shadow: 0 0 0 3px rgba(44, 164, 252, 0.18); }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: rgba(44, 164, 252, 0.85);
+      box-shadow: 0 0 0 3px rgba(44, 164, 252, 0.18);
+    }
 
     .hint { margin-top: 8px; color: var(--muted); font-size: 0.85rem; line-height: 1.35; }
 
@@ -186,7 +187,6 @@
     }
 
     .type-btn:hover { border-color: rgba(36, 164, 156, 0.40); box-shadow: rgba(10, 56, 84, 0.14) 0 8px 22px; }
-
     .type-btn:active { transform: scale(0.985); }
 
     .type-name { font-weight: 650; font-size: 1rem; }
@@ -328,6 +328,14 @@
     }
 
     .cell-btn:active { opacity: 0.75; }
+
+    .map-link {
+      color: var(--brandDeep);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .map-link:active { opacity: 0.75; }
 
     .modal {
       position: fixed;
@@ -568,6 +576,15 @@
       return f.format(dt);
     };
 
+    const fmtMonthDay = (ms) => {
+      const dt = new Date(ms);
+      const f = new Intl.DateTimeFormat(undefined, {
+        month: "2-digit",
+        day: "2-digit",
+      });
+      return f.format(dt);
+    };
+
     const currentYear = () => new Date().getFullYear();
 
     const yearFromMs = (ms) => {
@@ -589,30 +606,6 @@
       }
 
       return Array.from(set).sort((a, b) => b - a);
-    };
-
-    const getSelectedHistoryYear = () => {
-      const y = Number(state.ui.historyYear);
-      const cy = currentYear();
-      return Number.isFinite(y) ? y : cy;
-    };
-
-    const getSelectedHistoryTypeFilter = () => {
-      const v = state && state.ui ? state.ui.historyType : "";
-      return typeof v === "string" ? v : "";
-    };
-
-    const typeFilterKeyForCheckIn = (it) => {
-      const t = state.types.find((x) => x.id === it.typeId);
-      if (t) return `id:${t.id}`;
-      const snap = String(it.typeNameSnapshot || "(deleted type)");
-      return `snap:${snap}`;
-    };
-
-    const typeFilterLabelForCheckIn = (it) => {
-      const label = getTypeName(it.typeId, it.typeNameSnapshot);
-      const t = state.types.find((x) => x.id === it.typeId);
-      return t ? label : `${label} (deleted)`;
     };
 
     const clampText = (s, max = 2000) => {
@@ -645,7 +638,14 @@
           { id: uuid(), name: "Deep Work", createdAt, active: true },
         ],
         checkIns: [],
-        ui: { sortKey: "createdAt", sortDir: "desc", lastGeo: null, lastAddress: null, historyYear: currentYear(), historyType: "" },
+        ui: {
+          sortKey: "createdAt",
+          sortDir: "desc",
+          lastGeo: null,
+          lastAddress: null,
+          historyYear: currentYear(),
+          historyType: "",
+        },
       };
     };
 
@@ -680,8 +680,10 @@
         if (!("lastAddress" in parsed.ui)) parsed.ui.lastAddress = null;
 
         if (!("historyYear" in parsed.ui)) parsed.ui.historyYear = currentYear();
-        const hy = Number(parsed.ui.historyYear);
-        parsed.ui.historyYear = Number.isFinite(hy) ? hy : currentYear();
+        {
+          const hy = Number(parsed.ui.historyYear);
+          parsed.ui.historyYear = Number.isFinite(hy) ? hy : currentYear();
+        }
 
         if (!("historyType" in parsed.ui)) parsed.ui.historyType = "";
         parsed.ui.historyType = typeof parsed.ui.historyType === "string" ? parsed.ui.historyType : "";
@@ -691,6 +693,8 @@
         return defaultState();
       }
     };
+
+    let state = loadState();
 
     const saveState = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -720,6 +724,30 @@
       return t ? t.name : (snapshot || "(deleted type)");
     };
 
+    const getSelectedHistoryYear = () => {
+      const y = Number(state.ui.historyYear);
+      const cy = currentYear();
+      return Number.isFinite(y) ? y : cy;
+    };
+
+    const getSelectedHistoryTypeFilter = () => {
+      const v = state && state.ui ? state.ui.historyType : "";
+      return typeof v === "string" ? v : "";
+    };
+
+    const typeFilterKeyForCheckIn = (it) => {
+      const t = state.types.find((x) => x.id === it.typeId);
+      if (t) return `id:${t.id}`;
+      const snap = String(it.typeNameSnapshot || "(deleted type)");
+      return `snap:${snap}`;
+    };
+
+    const typeFilterLabelForCheckIn = (it) => {
+      const label = getTypeName(it.typeId, it.typeNameSnapshot);
+      const t = state.types.find((x) => x.id === it.typeId);
+      return t ? label : `${label} (deleted)`;
+    };
+
     const locationToText = (loc) => {
       if (!loc) return "unknown";
       if (loc.status === "ok") {
@@ -742,6 +770,55 @@
       if (addr.status === "pending") return "(resolving address...)";
       if (addr.status === "error") return addr.text || "(address unavailable)";
       return "unknown";
+    };
+
+    // UI-only: keep full address in storage/CSV, show only street name in History table
+    const splitWords = (s) => {
+      const t = String(s || "");
+      const out = [];
+      let cur = "";
+      for (let i = 0; i < t.length; i += 1) {
+        const ch = t[i];
+        const isWs = ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
+        if (isWs) {
+          if (cur) out.push(cur);
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      if (cur) out.push(cur);
+      return out;
+    };
+
+    const stripTrailingHouseToken = (s) => {
+      const words = splitWords(String(s || "").trim());
+      if (words.length < 2) return String(s || "").trim();
+      const last = words[words.length - 1];
+      const firstChar = last[0] || "";
+      if (firstChar >= "0" && firstChar <= "9") {
+        words.pop();
+        return words.join(" ").trim();
+      }
+      return words.join(" ").trim();
+    };
+
+    const addressToShortText = (addr, loc) => {
+      if (!addr) return addressToText(addr, loc);
+      if (addr.status !== "ok") return addressToText(addr, loc);
+
+      const parts = (addr.parts && typeof addr.parts === "object") ? addr.parts : null;
+      if (parts) {
+        const road = parts.road || parts.pedestrian || parts.footway || parts.cycleway || parts.path || "";
+        if (road) return clampText(road, 120);
+      }
+
+      const t = String(addr.text || "").trim();
+      if (!t) return "(address)";
+      const idx = t.indexOf(",");
+      const first = idx >= 0 ? t.slice(0, idx).trim() : t;
+      const streetOnly = stripTrailingHouseToken(first);
+      return streetOnly || first || t;
     };
 
     const getGeo = () => {
@@ -1032,8 +1109,8 @@
         return an.localeCompare(bn, undefined, { sensitivity: "base" });
       }
       if (key === "address") {
-        const an = addressToText(a.address, a.location);
-        const bn = addressToText(b.address, b.location);
+        const an = addressToShortText(a.address, a.location);
+        const bn = addressToShortText(b.address, b.location);
         return an.localeCompare(bn, undefined, { sensitivity: "base" });
       }
       return 0;
@@ -1117,6 +1194,15 @@
       return { year, items: items.filter((it) => typeFilterKeyForCheckIn(it) === tf) };
     };
 
+    const mapUrlForLoc = (loc) => {
+      if (!loc || loc.status !== "ok") return "";
+      const lat = Number(loc.lat);
+      const lng = Number(loc.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return "";
+      const q = encodeURIComponent(`${lat},${lng}`);
+      return `https://www.google.com/maps/search/?api=1&query=${q}`;
+    };
+
     const renderHistory = () => {
       const body = $("#historyBody");
       body.innerHTML = "";
@@ -1148,7 +1234,7 @@
         const tr = document.createElement("tr");
 
         const tdDate = document.createElement("td");
-        tdDate.textContent = fmtDate(it.createdAt);
+        tdDate.textContent = fmtMonthDay(it.createdAt);
 
         const tdType = document.createElement("td");
         const typeBtn = document.createElement("button");
@@ -1160,7 +1246,19 @@
         tdType.appendChild(typeBtn);
 
         const tdAddr = document.createElement("td");
-        tdAddr.textContent = addressToText(it.address, it.location);
+        const addrText = addressToShortText(it.address, it.location);
+        const href = mapUrlForLoc(it.location);
+        if (href) {
+          const a = document.createElement("a");
+          a.href = href;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.className = "map-link";
+          a.textContent = addrText;
+          tdAddr.appendChild(a);
+        } else {
+          tdAddr.textContent = addrText;
+        }
 
         const tdNotes = document.createElement("td");
         const notesBtn = document.createElement("button");
@@ -1191,6 +1289,8 @@
       saveState();
       renderHistory();
     };
+
+    // Edit modal
 
     let editingId = null;
 
@@ -1288,7 +1388,7 @@
       const t = String(s ?? "");
       for (let i = 0; i < t.length; i += 1) {
         const c = t[i];
-        if (c === ',' || c === '"' || c === '\n' || c === '\r') return true;
+        if (c === "," || c === '"' || c === "\n" || c === "\r") return true;
       }
       return false;
     };
@@ -1430,7 +1530,7 @@
         }
 
         if (ch === '"') { inQuotes = true; i += 1; continue; }
-        if (ch === ',') { pushCell(); i += 1; continue; }
+        if (ch === ",") { pushCell(); i += 1; continue; }
 
         if (ch === "\n") {
           pushCell();
@@ -1676,6 +1776,8 @@
       $$("#typeGrid button").forEach((b) => { b.disabled = disabled; });
     };
 
+    // Check-in
+
     const doCheckIn = async (typeId) => {
       const t = state.types.find((x) => x.id === typeId);
       if (!t) { toast("Error", "Unknown type"); return; }
@@ -1799,6 +1901,12 @@
       if (stripLeadingBOM("\uFEFFabc") !== "abc") fail("stripLeadingBOM: removes BOM");
       if (stripLeadingBOM("abc") !== "abc") fail("stripLeadingBOM: no-op");
 
+      // splitWords
+      {
+        const w = splitWords("a b\tc\nd\re");
+        if (w.join("|") !== "a|b|c|d|e") fail("splitWords: whitespace splitting");
+      }
+
       // csvCell
       if (csvCell("a,b") !== '"a,b"') fail("csvCell: comma quoting");
       if (csvCell("a\n b") !== '"a\n b"') fail("csvCell: newline quoting");
@@ -1837,6 +1945,18 @@
         if (!a.includes("Main St") || !a.includes("1")) fail("formatNominatimAddress: street + number");
       }
 
+      // addressToShortText
+      {
+        const addr = { status: "ok", text: "Main St 1, Helsinki 00100, Finland" };
+        const s = addressToShortText(addr, { status: "ok" });
+        if (s !== "Main St") fail("addressToShortText: strips trailing house token");
+      }
+      {
+        const addr = { status: "ok", text: "X", parts: { road: "Teal Road", house_number: "12", city: "Helsinki" } };
+        const s = addressToShortText(addr, { status: "ok" });
+        if (s !== "Teal Road") fail("addressToShortText: parts road only");
+      }
+
       // listYearsFromCheckIns
       {
         const ms23 = Date.UTC(2023, 0, 1);
@@ -1856,7 +1976,7 @@
       }
       {
         const csv = makeCsv([["a", "b"], ["x\n y", "z"]]);
-        if (csv !== "a,b\r\n\"x\n y\",z") fail("makeCsv: quotes newline cell");
+        if (csv !== 'a,b\r\n"x\n y",z') fail("makeCsv: quotes newline cell");
       }
 
       // history type filter helpers
@@ -1875,8 +1995,6 @@
 
       return true;
     };
-
-    let state = loadState();
 
     // Wire UI
 
