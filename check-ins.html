@@ -368,6 +368,22 @@
       .header { padding-left: 2px; }
       .modal-sheet { max-width: 520px; }
     }
+
+    /* iPhone landscape: use the extra width, keep height tight */
+    @media (orientation: landscape) and (max-height: 520px) {
+      body {
+        padding: 10px 16px;
+        padding-bottom: 86px;
+      }
+
+      .app { max-width: 860px; }
+      .tabs-inner { max-width: 860px; }
+      .toast { max-width: 860px; bottom: 86px; }
+
+      .type-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+      .header { padding: 10px 6px 12px; }
+    }
   </style>
 </head>
 <body>
