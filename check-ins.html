@@ -99,7 +99,7 @@
       margin-bottom: 6px;
     }
 
-    input[type="text"], textarea {
+    input[type="text"], input[type="datetime-local"], textarea {
       width: 100%;
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -132,7 +132,7 @@
       border-radius: 999px;
     }
 
-    input[type="text"]:focus, textarea:focus, select:focus {
+    input[type="text"]:focus, input[type="datetime-local"]:focus, textarea:focus, select:focus {
       border-color: rgba(44, 164, 252, 0.85);
       box-shadow: 0 0 0 3px rgba(44, 164, 252, 0.18);
     }
@@ -368,6 +368,14 @@
 
     .modal-actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
 
+    .modal-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .modal-grid .full { grid-column: 1 / -1; }
+
     @media (min-width: 768px) {
       body { padding: 22px; padding-bottom: 106px; }
       .app { max-width: 980px; }
@@ -391,6 +399,23 @@
       .type-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
       .header { padding: 10px 6px 12px; }
+    }
+
+    @media (max-width: 540px) {
+      .modal-sheet {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transform: none;
+        width: 100%;
+        max-width: none;
+        max-height: min(88vh, 640px);
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      }
+
+      .modal-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -523,15 +548,23 @@
         <button id="btnEditClose" class="btn small danger" type="button">Delete</button>
       </div>
 
-      <div>
-        <label for="editTypeSelect">Type</label>
-        <select id="editTypeSelect"></select>
-        <div class="hint" id="editTypeHint"></div>
+      <div class="modal-grid">
+        <div>
+          <label for="editTypeSelect">Type</label>
+          <select id="editTypeSelect"></select>
+          <div class="hint" id="editTypeHint"></div>
+        </div>
 
-        <div style="height: 10px;"></div>
+        <div>
+          <label for="editTimestampInput">Timestamp</label>
+          <input id="editTimestampInput" type="datetime-local" />
+          <div class="hint">Local time</div>
+        </div>
 
-        <label for="editNotesInput">Notes</label>
-        <textarea id="editNotesInput" placeholder="Optional notes"></textarea>
+        <div class="full">
+          <label for="editNotesInput">Notes</label>
+          <textarea id="editNotesInput" placeholder="Optional notes"></textarea>
+        </div>
       </div>
 
       <div class="modal-actions">
@@ -591,6 +624,25 @@
       const d = new Date(ms);
       const y = d.getFullYear();
       return Number.isFinite(y) ? y : null;
+    };
+
+    const toLocalDateTimeInputValue = (ms) => {
+      const dt = new Date(ms);
+      if (!Number.isFinite(dt.getTime())) return "";
+      const pad2 = (n) => String(n).padStart(2, "0");
+      const y = dt.getFullYear();
+      const mo = pad2(dt.getMonth() + 1);
+      const d = pad2(dt.getDate());
+      const h = pad2(dt.getHours());
+      const mi = pad2(dt.getMinutes());
+      return `${y}-${mo}-${d}T${h}:${mi}`;
+    };
+
+    const parseLocalDateTimeInputValue = (value) => {
+      const t = String(value || "").trim();
+      if (!t) return NaN;
+      const ms = new Date(t).getTime();
+      return Number.isFinite(ms) ? ms : NaN;
     };
 
     const listYearsFromCheckIns = (checkIns, currentY, selectedY) => {
@@ -1357,6 +1409,7 @@
         ? "Original type was deleted. Choose a new one or keep snapshot."
         : (current.active === false ? "Current type is inactive. You can keep it or change it." : "Change type for this check-in.");
 
+      $("#editTimestampInput").value = toLocalDateTimeInputValue(it.createdAt);
       $("#editNotesInput").value = it.notes || "";
       showEditModal(true);
     };
@@ -1375,8 +1428,16 @@
         }
       }
 
+      const maybeTs = parseLocalDateTimeInputValue($("#editTimestampInput").value);
+      if (Number.isFinite(maybeTs)) {
+        it.createdAt = maybeTs;
+      }
+
       it.notes = clampText($("#editNotesInput").value, 2000).trim();
       saveState();
+      renderCounts();
+      renderHistoryYearSelect();
+      renderHistoryTypeSelect();
       renderHistory();
       toast("Saved", "Check-in updated");
       closeEditModal();
